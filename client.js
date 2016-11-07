@@ -1,6 +1,7 @@
 var client = require('socket.io-client');
 var minimist = require('minimist');
 
+var execSync = require('child_process').execSync;
 var stdin = process.stdin;
 stdin.setRawMode( true );
 stdin.resume();
@@ -28,20 +29,20 @@ var submitQuery = function(socket, connectionId, resource, params) {
     var newQueryId = ++queryId;
     socket.emit('query', { type: resource, requestId: newQueryId, params: params });
     console.log('Starting Query '+newQueryId);
-    queries[newQueryId] = connectionId+newQueryId; 
+    queries[newQueryId] = connectionId+newQueryId;
     socket.on(connectionId+newQueryId, function(data, cb) {
         queryResponse(data, cb, newQueryId);
     });
 }
 
 var stopQuery = function() {
-    
+
 }
 
 var resumeQuery = function(socket, queryId, resumeId) {
     console.log('Will resume query '+queryId+': '+resumeId);
     socket.emit('resumeQuery', {
-        id: resumeId 
+        id: resumeId
     });
 }
 
@@ -57,8 +58,11 @@ if (!argv['host']) {
 
     stdin.on( 'data', function( key ) {
       if (key === 'd') {
-          console.log('Disconnecting....');
-          socket.io.engine.close();
+          console.log('Disabling Network...');
+          execSync('ifdown ensp03')
+      } else if (key === 'u') {
+        console.log('Enabling Network...');
+        execSync('ifup ensp03')
       }
     });
 
@@ -68,7 +72,7 @@ if (!argv['host']) {
             console.log('Authenticating using session '+sessionId);
             socket.emit('authentication', {
                 sessionId: sessionId
-            });       
+            });
         } else {
             console.log('Authenticating using user/pass');
             socket.emit('authentication', {
@@ -118,7 +122,7 @@ if (!argv['host']) {
             //submitQuery(socket,session.connectionId, 'event', { element_id: [9010]});
             //submitQuery(socket,session.connectionId, 'alarm', { element_id: [9010]});
             submitQuery(socket,session.connectionId, 'stat', { element_id: [6583], metric_id: [1316], resolution: 30 });
-            
+
         }
     });
 
@@ -131,7 +135,7 @@ if (!argv['host']) {
         console.log('Query End');
         console.log(data);
     });
-    
+
     socket.on('queryInfo', function(info) {
         console.log('Query info');
         console.log(info);
