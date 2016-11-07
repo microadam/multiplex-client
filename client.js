@@ -1,6 +1,18 @@
 var client = require('socket.io-client');
 var minimist = require('minimist');
 
+var stdin = process.stdin;
+stdin.setRawMode( true );
+stdin.resume();
+stdin.setEncoding( 'utf8' );
+
+stdin.on( 'data', function(key) {
+  // ctrl-c ( end of text )
+  if ( key === '\u0003' ) {
+    process.exit();
+  }
+});
+
 var argv = minimist(process.argv.slice(2), { default: {user: 'admin', pass: 'admin'} });
 var queryId = 0,
     sessionId,
@@ -41,6 +53,13 @@ if (!argv['host']) {
     var socket = client(argv['host'], {
         rejectUnauthorized: false,
         transports: [ 'websocket' ]
+    });
+
+    stdin.on( 'data', function( key ) {
+      if (key === 'd') {
+          console.log('Disconnecting....');
+          socket.io.engine.close();
+      }
     });
 
     socket.on('connect', function() {
