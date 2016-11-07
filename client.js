@@ -1,6 +1,8 @@
 var client = require('socket.io-client');
 var minimist = require('minimist');
 
+var queryData = require('./queries.json');
+
 var execSync = require('child_process').execSync;
 var stdin = process.stdin;
 stdin.setRawMode( true );
@@ -119,10 +121,9 @@ if (!argv['host']) {
                 resumeQuery(socket, key, queries[key]);
             });
         } else {
-            //submitQuery(socket,session.connectionId, 'event', { element_id: [9010]});
-            //submitQuery(socket,session.connectionId, 'alarm', { element_id: [9010]});
-            submitQuery(socket,session.connectionId, 'stat', { element_id: [6583], metric_id: [1316], resolution: 30 });
-
+            queryData.forEach(function (q) {
+              submitQuery(socket,session.connectionId, q.type, q.params);
+            })
         }
     });
 
