@@ -59,10 +59,10 @@ if (!argv['host']) {
     stdin.on( 'data', function( key ) {
       if (key === 'd') {
           console.log('Disabling Network...');
-          execSync('ifdown ensp03')
+          execSync('ifdown ' + argv['iface'])
       } else if (key === 'u') {
         console.log('Enabling Network...');
-        execSync('ifup ensp03')
+        execSync('ifup ' + argv['iface'])
       }
     });
 
